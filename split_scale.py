@@ -1,8 +1,5 @@
 import stats
-import numpy as numpy
-import wrangle
-import env
-
+import stats_functions
 
 def split_my_data(df, train_size):
     from sklearn.model_selection import train_test_split
@@ -18,33 +15,15 @@ def standard_scaler(train, test):
     test_scaled=pd.DataFrame(test_scaled_data,columns=test.columns).set_index([test.index])
     return scaler, train_scaled, test_scaled
 
-def scale_inverse(x):
-    scale_inverse = pd.DataFrame(scaler.inverse_transform(x), columns=x.columns.values).set_index([x.index.values])
-    return scaled_inverse
-
-
-
-def uniform_scaler(train, test):
-    scaler = QuantileTransformer(n_quantiles=100, output_distribution='uniform', random_state=123, copy=True).fit(train)
-    train_scaled = pd.DataFrame(scaler.transform(train), columns=train.columns.values).set_index([train.index.values])
-    test_scaled = pd.DataFrame(scaler.transform(test), columns=test.columns.values).set_index([test.index.values])
-    return train_scaled, test_scaled
-
-def gaussian_scaler(train, test):
-    scaler = PowerTransformer(method='yeo-johnson', standardize=False, copy=True).fit(train)
-    train_scaled = pd.DataFrame(scaler.transform(train), columns=train.columns.values).set_index([train.index.values])
-    test_scaled = pd.DataFrame(scaler.transform(test), columns=test.columns.values).set_index([test.index.values])
-    return train_scaled, test_scaled
-
-
-def min_max_scaler(train, test):
-    scaler = MinMaxScaler(copy=True, feature_range=(0,1)).fit(train)
-    train_scaled = pd.DataFrame(scaler.transform(train), columns=train.columns.values).set_index([train.index.values])
-    test_scaled = pd.DataFrame(scaler.transform(test), columns=test.columns.values).set_index([test.index.values])
-    return train_scaled, test_scaled
-
-def iqr_robust_scaler(train, test):
-    scaler = RobustScaler(quantile_range=(25.0,75.0), copy=True, with_centering=True, with_scaling=True).fit(train)
-    train_scaled = pd.DataFrame(scaler.transform(train), columns=train.columns.values).set_index([train.index.values])
-    test_scaled = pd.DataFrame(scaler.transform(test), columns=test.columns.values).set_index([test.index.values])
-    return train_scaled, test_scaled
+def split_data(df):
+    train, test = split_my_data(df, .70)
+    scaler, train_scaled, test_scaled = standard_scaler(train, test)
+    X_train = train.drop(columns = ["home_value"])
+    X_test = test.drop(columns = ["home_value"])
+    y_train = train[["home_value"]]
+    y_test = test[["home_value"]]
+    X_train_scaled = train_scaled.drop(columns = ["home_value"])
+    X_test_scaled = test_scaled.drop(columns = ["home_value"])
+    y_train_scaled = train_scaled[["home_value"]]
+    y_test_scaled = test_scaled[["home_value"]]
+    return train, test, X_train, X_test, y_train, y_test, X_train_scaled, y_train_scaled, X_test_scaled, y_test_scaled

@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+from scipy import stats
+from statsmodels.sandbox.regression.predstd import wls_prediction_std
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import mean_squared_error
@@ -14,6 +16,6 @@ from sklearn import preprocessing
 import matplotlib
 from sklearn.feature_selection import SelectKBest, f_regression, RFE
 from pydataset import data
-import statsmodels.api as sm
+from statsmodels.formula.api import ols
 import re
 import multiprocessing as mp

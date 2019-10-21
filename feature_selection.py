@@ -1,37 +1,7 @@
 import stats
 import stats_functions
-
-def select_kbest_freg_unscaled(X_train,y_train, k):
-   k_selector = SelectKBest(f_regression, k = k).fit(X_train,y_train)
-   k_support = k_selector.get_support()
-   k_feature = X_train.loc[:, k_support].columns.tolist()
-   return k_feature, k_selector
-   
-def select_kbest_freg_scaled(X_train_scaled, y_train_scaled, k):
-    k_feature_scaled, k_selector_scaled = select_kbest_freg_unscaled(X_train=X_train_scaled, y_train=y_train_scaled, k=k)
-    return k_feature_scaled, k_selector_scaled
-
-def ols_backward_elimination(X_train, y_train):
-    cols = (X_train.columns)
-    pmax = 1
-    while pmax > .05:
-        if len(cols)!=0:
-            X_1 = X_train[cols]
-            model = sm.ols(y_train, X_1).fit()
-            pmax = max(model.pvalues)
-            pmax_id = model.pvalues.idxmax()
-        else:
-            break
-        if (pmax > .05):
-            cols.remove(pmax_id)
-    return pd.Series(cols)
-
-def lasso_cv_coef(X_train, y_train):
-    las = LassoCV()
-    las.fit(X_train, y_train)
-    coef = pd.Series(las.coef_, index = X_train.columns)
-    bar_plot = sns.barplot(x = X_train.columns, y = las.coef_)
-    return coef, bar_plot
+df, info, head = prepare_df()
+train, test, X_train, X_test, y_train, y_test, X_train_scaled, X_test_scaled, y_train_scaled, y_test_scaled = split_data(df)
 
 def optimal_number_of_features(X_train, y_train, X_test, y_test):
     number_of_attributes = X_train.shape[1]
@@ -50,7 +20,7 @@ def optimal_number_of_features(X_train, y_train, X_test, y_test):
         if(score>high_score):
             high_score = score
             number_of_features = number_of_features_list[n]
-    return number_of_features
+    return number_of_features, high_score
 
 def optimal_features(X_train, y_train, number_of_features):
     cols = list(X_train.columns)
@@ -60,11 +30,19 @@ def optimal_features(X_train, y_train, number_of_features):
     model.fit(X_rfe,y_train)
     temp = pd.Series(rfe.support_,index = cols)
     selected_features_rfe = temp[temp==True].index
-    
     return selected_features_rfe
 
 def optimal_dataframe(X_train, X_test, selected_features_rfe):
     X_train_df = X_train[selected_features_rfe]
     X_test_df = X_test[selected_features_rfe]
     return X_train_df, X_test_df
+
+
+
+def select_features():
+    n_features, high_score = optimal_number_of_features(X_train,y_train,X_test,y_test)
+    selected_features = optimal_features(X_train,y_train,n_features)
+    X_train_sf, X_test_sf = optimal_dataframe(X_train, X_test, selected_features)
+    return X_train_sf, X_test_sf
+
 
